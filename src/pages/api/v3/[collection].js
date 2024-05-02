@@ -19,6 +19,14 @@ const limiter = rateLimit({
 });
 
 export default async function handler(req, res) {
+	const apiKey = req.query.api_key; // Ambil API key dari query parameter
+	const validApiKey = process.env.API_KEY; // API key yang disimpan di environment variable
+
+	if (!apiKey || apiKey !== validApiKey) {
+		return res.status(401).json({ error: "Unauthorized access" }); // Akses tidak diizinkan jika API key tidak valid
+	}
+
+	// Lanjutkan dengan logic asli jika API key valid
 	limiter(req, res, async () => {
 		const collectionName = req.query.collection;
 		if (!collectionName) {
