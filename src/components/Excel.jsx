@@ -4,28 +4,36 @@ import * as XLSX from "xlsx";
 
 function ExcelUploadForm() {
 	const [file, setFile] = useState(null);
-	const [collectionName, setCollectionName] = useState(""); // state untuk menyimpan nama koleksi
+	const [collectionName, setCollectionName] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const handleConvert = async () => {
 		if (file && collectionName) {
+			setLoading(true);
 			const reader = new FileReader();
 			reader.onload = async (e) => {
-				const data = e.target.result;
-				const workbook = XLSX.read(data, { type: "binary" });
-				const sheetName = workbook.SheetNames[0];
-				const worksheet = workbook.Sheets[sheetName];
-				const json = XLSX.utils.sheet_to_json(worksheet);
-				const jsonData = JSON.stringify({ data: json, collectionName }); // Kirim juga nama koleksi
+				try {
+					const data = e.target.result;
+					const workbook = XLSX.read(data, { type: "binary" });
+					const sheetName = workbook.SheetNames[0];
+					const worksheet = workbook.Sheets[sheetName];
+					const json = XLSX.utils.sheet_to_json(worksheet);
+					const jsonData = JSON.stringify({ data: json, collectionName });
 
-				const response = await fetch("/api/savejson", {
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: jsonData,
-				});
-				const result = await response.json();
-				alert(result.message);
+					const response = await fetch("/api/savejson", {
+						method: "POST",
+						headers: {
+							"Content-Type": "application/json",
+						},
+						body: jsonData,
+					});
+					const result = await response.json();
+					alert(result.message);
+				} catch (error) {
+					alert("Error: " + error.message);
+				} finally {
+					setLoading(false); // Hentikan loading
+				}
 			};
 			reader.readAsBinaryString(file);
 		} else {
@@ -45,6 +53,7 @@ function ExcelUploadForm() {
                    file:bg-violet-50 file:text-violet-700
                    hover:file:bg-violet-100'
 				onChange={(e) => setFile(e.target.files[0])}
+				disabled={loading}
 			/>
 			<input
 				type='text'
@@ -52,12 +61,14 @@ function ExcelUploadForm() {
 				value={collectionName}
 				className='form-input w-full p-2 text-gray-700 border rounded-md focus:border-violet-500 focus:ring focus:ring-violet-300 focus:ring-opacity-50'
 				onChange={(e) => setCollectionName(e.target.value)}
+				disabled={loading}
 			/>
 			<button
 				className='px-4 py-2 text-white bg-violet-600 rounded hover:bg-violet-700 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:ring-opacity-50'
 				onClick={handleConvert}
+				disabled={loading}
 			>
-				Konversi
+				{loading ? "Loading..." : "Konversi"}
 			</button>
 		</div>
 	);

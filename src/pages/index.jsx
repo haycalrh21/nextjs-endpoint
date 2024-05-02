@@ -3,7 +3,8 @@ import { useEffect, useState } from "react";
 
 export default function Home() {
 	const [fields, setFields] = useState([{ key: "", value: "" }]);
-	const [collectionName, setCollectionName] = useState(""); // Menambahkan state untuk nama koleksi
+	const [collectionName, setCollectionName] = useState("");
+	const [loading, setLoading] = useState(false);
 
 	const handleChange = (index, type, event) => {
 		const newFields = fields.map((field, i) => {
@@ -25,7 +26,6 @@ export default function Home() {
 
 	async function handleSubmit(e) {
 		e.preventDefault();
-
 		if (!collectionName.trim()) {
 			alert("Nama koleksi tidak boleh kosong");
 			return;
@@ -38,6 +38,7 @@ export default function Home() {
 			alert("Semua label dan nilai harus diisi");
 			return;
 		}
+		setLoading(true);
 
 		const data = fields.reduce((obj, field) => {
 			if (field.key && field.value) {
@@ -57,29 +58,20 @@ export default function Home() {
 			}),
 		});
 
-		if (response.ok) {
-			alert("Item berhasil ditambahkan");
-			setFields([{ key: "", value: "" }]); // Reset form
-		} else {
-			const error = await response.json();
-			alert(`Gagal menambahkan item: ${error.error}`);
+		try {
+			if (response.ok) {
+				alert("Item berhasil ditambahkan");
+				setFields([{ key: "", value: "" }]); // Reset form
+			} else {
+				const error = await response.json();
+				alert(`Gagal menambahkan item: ${error.error}`);
+			}
+		} catch (error) {
+			throw new Error(error);
+		} finally {
+			setLoading(false);
 		}
 	}
-
-	const fetchData = async () => {
-		try {
-			const response = await fetch("/api/v3/product");
-			if (!response.ok) {
-				throw new Error("Gagal mengambil data");
-			}
-
-			const data = await response.json();
-			return data;
-		} catch (error) {}
-	};
-	useEffect(() => {
-		fetchData();
-	});
 
 	return (
 		<div className='flex flex-col items-center justify-center min-h-screen bg-gray-100'>
@@ -93,11 +85,13 @@ export default function Home() {
 					value={collectionName}
 					onChange={(e) => setCollectionName(e.target.value)}
 					className='w-full p-3 border border-gray-300 rounded mt-4 focus:ring-2 focus:ring-blue-300'
+					disabled={loading}
 				/>
 				{fields.map((field, index) => (
 					<div key={index} className='flex flex-wrap items-center mt-4 gap-2'>
 						<input
 							type='text'
+							disabled={loading}
 							placeholder='Label'
 							value={field.key}
 							onChange={(e) => handleChange(index, "key", e)}
@@ -106,12 +100,14 @@ export default function Home() {
 						<input
 							type='text'
 							placeholder='Value'
+							disabled={loading}
 							value={field.value}
 							onChange={(e) => handleChange(index, "value", e)}
 							className='flex-grow p-3 border border-gray-300 rounded focus:ring-2 focus:ring-blue-300'
 						/>
 						<button
 							type='button'
+							disabled={loading}
 							onClick={() => handleRemoveField(index)}
 							className='bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out'
 						>
@@ -123,15 +119,17 @@ export default function Home() {
 					<button
 						type='button'
 						onClick={handleAddField}
+						disabled={loading}
 						className='bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out flex-grow sm:flex-grow-0'
 					>
 						Tambah Field
 					</button>
 					<button
 						type='submit'
+						disabled={loading}
 						className='bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 ease-in-out flex-grow sm:flex-grow-0'
 					>
-						Kirim
+						{loading ? "Loading..." : "Kirim"}
 					</button>
 				</div>
 			</form>
