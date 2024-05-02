@@ -1,16 +1,18 @@
 import { getApps, initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs } from "firebase/firestore";
 import rateLimit from "@/lib/rateLimit";
-
 const firebaseConfig = {
-	// your config
+	apiKey: "AIzaSyDfDdflOegGkNI_QomfnM8W7AV6wwvdSlg",
+	authDomain: "server-ad685.firebaseapp.com",
+	projectId: "server-ad685",
+	storageBucket: "server-ad685.appspot.com",
+	messagingSenderId: "321678842449",
+	appId: "1:321678842449:web:cf9aad24250e63d3d97670",
 };
 
 // Ensure only one Firebase instance is initialized
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
-
-// Apply rate limiting
 const limiter = rateLimit({
 	windowMs: 60 * 1000, // 1 minute
 	max: 5, // limit each IP to 5 requests per windowMs
