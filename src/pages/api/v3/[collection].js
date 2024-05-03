@@ -15,10 +15,22 @@ const app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
 const db = getFirestore(app);
 const limiter = rateLimit({
 	windowMs: 60 * 1000, // 1 minute
-	max: 5, // limit each IP to 5 requests per windowMs
+	max: 10, // limit each IP to 5 requests per windowMs
 });
 
 export default async function handler(req, res) {
+	// Set CORS headers
+	res.setHeader("Access-Control-Allow-Origin", "*"); // Izinkan semua domain
+	res.setHeader("Access-Control-Allow-Methods", "GET"); // Metode yang diperbolehkan
+	res.setHeader(
+		"Access-Control-Allow-Headers",
+		"Content-Type, Authorization, api_key"
+	); // Header yang diperbolehkan
+
+	if (req.method === "OPTIONS") {
+		res.status(200).end();
+		return;
+	}
 	const apiKey = req.query.api_key; // Ambil API key dari query parameter
 	const validApiKey = process.env.API_KEY; // API key yang disimpan di environment variable
 
