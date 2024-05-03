@@ -5,6 +5,23 @@ export default function Home() {
 	const [fields, setFields] = useState([{ key: "", value: "" }]);
 	const [collectionName, setCollectionName] = useState("");
 	const [loading, setLoading] = useState(false);
+	const [data, setData] = useState({ collections: [] });
+	const fetchData = async () => {
+		try {
+			const response = await fetch("/api/v3/collect");
+			if (!response.ok) {
+				throw new Error("API gagal");
+			}
+			const json = await response.json();
+			setData(json);
+		} catch (error) {
+			console.error("Error fetching data: ", error);
+		}
+	};
+
+	useEffect(() => {
+		fetchData();
+	}, []);
 
 	const handleChange = (index, type, event) => {
 		const newFields = fields.map((field, i) => {
@@ -70,15 +87,39 @@ export default function Home() {
 			throw new Error(error);
 		} finally {
 			setLoading(false);
+			fetchData();
 		}
 	}
 
 	return (
 		<div className='flex flex-col items-center justify-center min-h-screen bg-gray-100'>
+			<div className='mb-10'>
+				<h1 className='text-3xl font-bold text-center'>List Daftar api</h1>
+				<p className='text-1xl font-bold text-center'>
+					cara untuk menggunakannya /api/v3/namaapi?api_key=rahasia
+				</p>
+			</div>
+			<div className='container mx-auto px-4 mb-3'>
+				<ul className='grid grid-cols-2 md:grid-cols-4 gap-4'>
+					{data.collections.map((collection, index) => (
+						<li
+							key={index}
+							className='bg-gray-200 rounded-lg p-2 shadow text-sm'
+						>
+							{collection}
+						</li>
+					))}
+				</ul>
+			</div>
 			<form
 				onSubmit={handleSubmit}
 				className='max-w-lg mx-auto p-4 bg-white rounded-lg shadow-md'
 			>
+				<div>
+					<h2 className='text-2xl font-bold text-center'>
+						Input manual ke api
+					</h2>
+				</div>
 				<input
 					type='text'
 					placeholder='Nama Koleksi'
@@ -133,9 +174,8 @@ export default function Home() {
 					</button>
 				</div>
 			</form>
-
 			<div className='mt-4'></div>
-			<div>
+			<div className='max-w-lg mx-auto mt-4'>
 				<ExcelUploadForm />
 			</div>
 		</div>

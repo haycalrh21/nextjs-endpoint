@@ -43,6 +43,11 @@ function ExcelUploadForm() {
 
 	return (
 		<div className='flex flex-col items-center justify-center p-5 space-y-4 bg-gray-100 rounded-lg shadow-md'>
+			<div>
+				<h1 className='text-2xl font-bold text-center'>
+					Input excel manual ke api
+				</h1>
+			</div>
 			<input
 				type='file'
 				accept='.xls,.xlsx'
